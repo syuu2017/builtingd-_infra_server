@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tremoloConfig xmlns="http://www.tremolosecurity.com/tremoloConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tremolosecurity.com/tremoloConfig tremoloConfig.xsd" ldapRoot="o=Tremolo" groupObjectClass="groupOfNames" groupMemberAttribute="member" userObjectClass="inetOrgPerson">
+  <applications openSessionCookieName="openSession" openSessionTimeout="9000">
+    <application name="ScaleJS" azTimeoutMillis="30000" >
+      <urls>
+        <!-- The regex attribute defines if the proxyTo tag should be interpreted with a regex or not -->
+        <!-- The authChain attribute should be the name of an authChain -->
+        <url regex="false" authChain="loginForm" overrideHost="true" overrideReferer="true">
+          <!-- Any number of host tags may be specified to allow for an application to work on multiple hosts.  Additionally an asterick (*) can be specified to make this URL available for ALL hosts -->
+          <host>#[OU_HOST]</host>
+          <!-- The filterChain allows for transformations of the request such as manipulating attributes and injecting headers -->
+          <filterChain>
+            <filter class="com.tremolosecurity.prelude.filters.StopProcessing" />
+          </filterChain>
+          <!-- The URI (aka path) of this URL -->
+          <uri>/</uri>
+          <!-- List the various results that should happen -->
+          <results>
+            <azSuccess>scaleRedirect</azSuccess>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <!-- Determine if the currently logged in user may access the resource.  If ANY rule succeeds, the authorization succeeds.
+          The scope may be one of group, dn, filter, dynamicGroup or custom
+          The constraint identifies what needs to be satisfied for the authorization to pass and is dependent on the scope:
+            * group - The DN of the group in OpenUnison's virtual directory (must be an instance of groupOfUniqueNames)
+            * dn - The base DN of the user or users in OpenUnison's virtual directory
+            * dynamicGroup - The DN of the dynamic group in OpenUnison's virtual directory (must be an instance of groupOfUrls)
+            * custom - An implementation of com.tremolosecurity.proxy.az.CustomAuthorization -->
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="loginForm" overrideHost="true" overrideReferer="true">
+          <!-- Any number of host tags may be specified to allow for an application to work on multiple hosts.  Additionally an asterick (*) can be specified to make this URL available for ALL hosts -->
+          <host>#[OU_HOST]</host>
+          <!-- The filterChain allows for transformations of the request such as manipulating attributes and injecting headers -->
+          <filterChain>
+            <filter class="com.tremolosecurity.prelude.filters.StopProcessing" />
+          </filterChain>
+          <!-- The URI (aka path) of this URL -->
+          <uri>/logout</uri>
+          <!-- Tells OpenUnison how to reach the downstream application.  The ${} lets you set any request variable into the URI, but most of the time ${fullURI} is sufficient -->
+          <proxyTo>http://dnm${fullURI}</proxyTo>
+          <!-- List the various results that should happen -->
+          <results>
+            <azSuccess>Logout</azSuccess>
+          </results>
+          <!-- Determine if the currently logged in user may access the resource.  If ANY rule succeeds, the authorization succeeds.
+                    The scope may be one of group, dn, filter, dynamicGroup or custom
+                    The constraint identifies what needs to be satisfied for the authorization to pass and is dependent on the scope:
+                      * group - The DN of the group in OpenUnison's virtual directory (must be an instance of groupOfUniqueNames)
+                      * dn - The base DN of the user or users in OpenUnison's virtual directory
+                      * dynamicGroup - The DN of the dynamic group in OpenUnison's virtual directory (must be an instance of groupOfUrls)
+                      * custom - An implementation of com.tremolosecurity.proxy.az.CustomAuthorization -->
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="loginForm" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.proxy.filters.RemovePrefix">
+              <param name="prefix" value="/scale"/>
+              <param name="attributeName" value="trimmedURI"/>
+            </filter>
+          </filterChain>
+          <uri>/scale</uri>
+          <proxyTo>https://cdn.rawgit.com/TremoloSecurity/OpenUnison/1.0.7/unison/unison-scalejs-main/src/main/html${trimmedURI}</proxyTo>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="loginForm" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.scalejs.ws.ScaleMain">
+              <!-- The name of the attribute that stores the value to be displayed when referencing the currently logged in user, ie cn or displayName -->
+              <param name="displayNameAttribute" value="displayName"/>
+              <!-- The title to show on the home page -->
+              <param name="frontPage.title" value="FreeIPA Self Service Portal"/>
+              <!-- Sub text for the home page -->
+              <param name="frontPage.text" value="Use this portal for requesting and approving access to resources protected by FreeIPA"/>
+              <!-- Determines if a user can be edited -->
+              <param name="canEditUser" value="true"/>
+              <!-- The name of the workflow to run when a user submits an update request -->
+              <param name="workflowName" value="ipa-user-update"/>
+              <!-- When the below number of minutes are left in the user's session, warn the user -->
+              <param name="warnMinutesLeft" value="5" />
+              <!-- For each attribute, define an attributeNames, displayName, readOnly -->
+              <param name="attributeNames" value="uid"/>
+              <param name="uid.displayName" value="Login ID"/>
+              <param name="uid.readOnly" value="true"/>
+              <param name="attributeNames" value="displayName"/>
+              <param name="displayName.displayName" value="Display Name"/>
+              <param name="displayName.readOnly" value="false"/>
+              <param name="displayName.required" value="true"/>
+              <param name="attributeNames" value="givenName"/>
+              <param name="givenName.displayName" value="First Name"/>
+              <param name="givenName.readOnly" value="false"/>
+              <param name="givenName.required" value="true"/>
+              <param name="attributeNames" value="sn"/>
+              <param name="sn.displayName" value="Last Name"/>
+              <param name="sn.readOnly" value="false"/>
+              <param name="sn.required" value="true"/>
+              <param name="attributeNames" value="mail"/>
+              <param name="mail.displayName" value="Email Address"/>
+              <param name="mail.readOnly" value="false"/>
+              <param name="mail.required" value="true"/>
+              <param name="attributeNames" value="loginShell"/>
+              <param name="loginShell.displayName" value="Lofin Shell"/>
+              <param name="loginShell.readOnly" value="false"/>
+              <param name="loginShell.required" value="true"/>
+              <param name="attributeNames" value="ipaSshPubKey"/>
+              <param name="ipaSshPubKey.displayName" value="SSH Public Key"/>
+              <param name="ipaSshPubKey.readOnly" value="false"/>
+              <param name="ipaSshPubKey.required" value="true"/>
+              <!-- The name of the attribute that identifies the user uniquely -->
+              <param name="uidAttributeName" value="uid"/>
+              <!-- An attribute that specifies which roles a user is a member of.  If left blank, then the user's DN in the virtual directory is compared against memberOf attributes -->
+              <param name="roleAttribute" value=""/>
+              <!-- List of attributes to include in the approval screen -->
+              <param name="approvalAttributeNames" value="uid"/>
+              <param name="approvalAttributeNames" value="givenName"/>
+              <param name="approvalAttributeNames" value="sn"/>
+              <param name="approvalAttributeNames" value="mail"/>
+              <param name="approvalAttributeNames" value="displayName"/>
+              <!-- Labels for each of the attributes -->
+              <param name="approvals.uid" value="Login ID"/>
+              <param name="approvals.givenName" value="First Name"/>
+              <param name="approvals.sn" value="Last Name"/>
+              <param name="approvals.mail" value="Email Address"/>
+              <param name="approvals.displayName" value="Display Name"/>
+              <!-- If set to true, the organization tree is shown on the main page, helpful when there are numerous links to organize them by organization -->
+              <param name="showPortalOrgs" value="false"/>
+              <!-- The URL to redirect the user to when they logout -->
+              <param name="logoutURL" value="/logout"/>
+              <!-- Optional class that can make dynamic decisions about editing the user's profile, must implement com.tremolosecurity.scalejs.sdk.UiDecisions -->
+              <param name="uiHelperClassName" value=""/>
+            </filter>
+          </filterChain>
+          <uri>/scale/main</uri>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="resetPassword" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.proxy.filters.RemovePrefix">
+              <param name="prefix" value="/scale-reset"/>
+              <param name="attributeName" value="trimmedURI"/>
+            </filter>
+          </filterChain>
+          <uri>/scale-reset</uri>
+          <proxyTo>https://cdn.rawgit.com/TremoloSecurity/OpenUnison/1.0.7/unison/unison-scalejs-password/src/main/html${trimmedURI}</proxyTo>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="resetPassword" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.scalejs.password.ws.ScalePassword">
+              <!-- The name of the attribute that stores the value to be displayed when referencing the currently logged in user, ie cn or displayName -->
+              <param name="displayNameAttribute" value="displayName"/>
+              <!-- The title to show on the home page -->
+              <param name="frontPage.title" value="FreeIPA Password Reset"/>
+              <!-- Sub text for the home page -->
+              <param name="frontPage.text" value="Please enter your new password.  Your password must have an upper case, lower case, numeric and special character.  The password must be at least 8 characters long and not longer then 20.  Also, 3 consecutive characters from your first name, last name or user id can not appear in it."/>
+              <!-- The URL to access ScaleMain -->
+              <param name="homeURL" value="/scale/index.html"/>
+              <!-- The URL to redirect the user to when they logout -->
+              <param name="logoutURL" value="/logout"/>
+              <!-- The name of the attribute that identifies the user uniquely -->
+              <param name="uidAttributeName" value="uid"/>
+              <!-- Reason for the workflow -->
+              <param name="reason" value="Password reset"/>
+              <!-- Workflow for the password reset call -->
+              <param name="workflowName" value="ipa-password-self-reset"/>
+              <!-- Implementation of com.tremolosecurity.scalejs.password.sdk.PasswordValidator -->
+              <param name="validatorClassName" value="com.tremolosecurity.scalejs.password.validators.ActiveDirectoryValidator"/>
+              <!-- List of parameters for the validator -->
+              <param name="validator.params" value="requireLower=true"/>
+              <param name="validator.params" value="requireUpper=true"/>
+              <param name="validator.params" value="requireNumber=true"/>
+              <param name="validator.params" value="requireSpecial=true"/>
+              <param name="validator.params" value="minRequirements=4"/>
+              <param name="validator.params" value="maxChars=20"/>
+              <param name="validator.params" value="minChars=8"/>
+              <param name="validator.params" value="attributesToCheck=Last Name=sn"/>
+              <param name="validator.params" value="attributesToCheck=User Name=uid"/>
+              <param name="validator.params" value="attributesToCheck=First Name=givenName"/>
+            </filter>
+          </filterChain>
+          <uri>/scale-reset/password</uri>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="anon" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.proxy.filters.RemovePrefix">
+              <param name="prefix" value="/scale-register"/>
+              <param name="attributeName" value="trimmedURI"/>
+            </filter>
+          </filterChain>
+          <uri>/scale-register</uri>
+          <proxyTo>https://cdn.rawgit.com/TremoloSecurity/OpenUnison/1.0.7/unison/unison-scalejs-register/src/main/html${trimmedURI}</proxyTo>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+        <url regex="false" authChain="anon" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.scalejs.register.ws.ScaleRegister">
+              <!-- The name of the attribute that stores the value to be displayed when referencing the currently logged in user, ie cn or displayName -->
+              <param name="displayNameAttribute" value=""/>
+              <!-- The name of the attribute that identifies the user uniquely -->
+              <param name="uidAttributeName" value="uid"/>
+              <!-- If a custom submission class isn't used, the workflow to execute -->
+              <param name="workflowName" value="ipa-user-selfregistration"/>
+              <!-- The URL to redirect the user to when they logout -->
+              <param name="logoutURL" value="/logout"/>
+              <!-- The title to show on the home page -->
+              <param name="frontPage.title" value="Register an account in FreeIPA"/>
+              <!-- Sub text for the home page -->
+              <param name="frontPage.text" value="Provide your information below to register your account"/>
+              <!-- Set to true if the password should be pre-set, should NOT be used for anonymous access -->
+              <param name="preSetPassword" value="false"/>
+              <!-- If set to true, the user must suply a reason for the reuest -->
+              <param name="requireReason" value="false"/>
+              <!-- If set to true, a recaptcha is required, registration at https://www.google.com/recaptcha/intro/index.html required -->
+              <param name="requireReCaptcha" value="true"/>
+              <!-- Site key for Google ReCaptcha -->
+              <param name="rcSiteKey" value="#[GOOGLE_CAPTCHA_SITE_KEY]"/>
+              <!-- Secret key for Google ReCaptcha -->
+              <param name="rcSecret" value="#[GOOGLE_CAPTCHA_SECRET]"/>
+              <!-- Set to true if the user must accept terms and conditions -->
+              <param name="requireTermsAndConditions" value="false"/>
+              <!-- Terms and conditions text, rendered as HTML -->
+              <param name="termsAndConditionsText" value=""/>
+              <!-- Set to true if a custom class, implementing com.tremolosecurity.scalejs.register.sdk.CreateRegisterUser -->
+              <param name="useCallWorkflowClass" value="false"/>
+              <!-- for each attribute, have an attributeNames as the name of the attribute -->
+              <param name="attributeNames" value="uid"/>
+              <!-- how to display the attribute -->
+              <param name="uid.displayName" value="Login ID"/>
+              <!-- The message to show if the regular expression fails -->
+              <param name="uid.regExFailedMsg" value="Invalid login id"/>
+              <param name="uid.regEx" value=".*" />
+              <!-- Minimum number of characters -->
+              <param name="uid.minChars" value="0"/>
+              <!-- Maximum number of characters (0 for unlimited) -->
+              <param name="uid.maxChars" value="0"/>
+              <!-- Set to true if this value must be unique in the virtual directory -->
+              <param name="uid.unique" value="true"/>
+              <!-- May be text or list -->
+              <param name="uid.type" value="text"/>
+              <param name="attributeNames" value="givenName"/>
+              <param name="givenName.displayName" value="First Name"/>
+              <param name="givenName.regExFailedMsg" value="Invalid first name"/>
+              <param name="givenName.regEx" value=".*" />
+              <param name="givenName.minChars" value="0"/>
+              <param name="givenName.maxChars" value="0"/>
+              <param name="givenName.unique" value="false"/>
+              <param name="givenName.type" value="text"/>
+              <param name="attributeNames" value="sn"/>
+              <param name="sn.displayName" value="Last Name"/>
+              <param name="sn.regExFailedMsg" value="Invalid last name"/>
+              <param name="sn.regEx" value=".*" />
+              <param name="sn.minChars" value="0"/>
+              <param name="sn.maxChars" value="0"/>
+              <param name="sn.unique" value="false"/>
+              <param name="sn.type" value="text"/>
+              <param name="attributeNames" value="mail"/>
+              <param name="mail.displayName" value="Email Address"/>
+              <param name="mail.regExFailedMsg" value="Invalid email address"/>
+              <param name="mail.regEx" value=".*@.*" />
+              <param name="mail.minChars" value="0"/>
+              <param name="mail.maxChars" value="0"/>
+              <param name="mail.unique" value="true"/>
+              <param name="mail.type" value="text"/>
+              <param name="attributeNames" value="displayName"/>
+              <param name="displayName.displayName" value="Display Name"/>
+              <param name="displayName.regExFailedMsg" value="Invalid display name"/>
+              <param name="displayName.regEx" value=".*" />
+              <param name="displayName.minChars" value="0"/>
+              <param name="displayName.maxChars" value="0"/>
+              <param name="displayName.unique" value="false"/>
+              <param name="displayName.type" value="text"/>
+            </filter>
+          </filterChain>
+          <uri>/scale-register/register</uri>
+          <results>
+            <auFail>noauaz</auFail>
+            <azFail>noauaz</azFail>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+      </urls>
+      <!-- The cookie configuration determines how sessions are managed for this application -->
+      <cookieConfig>
+        <!-- The name of the session cookie for this application.  Applications that want SSO between them should have the same cookie name -->
+        <sessionCookieName>tremolosession</sessionCookieName>
+        <!-- The domain of component of the cookie -->
+        <domain>#[OU_HOST]</domain>
+        <!-- The URL that OpenUnison will interpret as the URL to end the session -->
+        <logoutURI>/logout</logoutURI>
+        <!-- The name of the AES-256 key in the keystore to use to encrypt this session -->
+        <keyAlias>session-unison</keyAlias>
+        <!-- If set to true, the cookie's secure flag is set to true and the browser will only send this cookie over https connections -->
+        <secure>true</secure>
+        <!-- The number of secconds that the session should be allowed to be idle before no longer being valid -->
+        <timeout>900</timeout>
+        <!-- required but ignored -->
+        <scope>-1</scope>
+      </cookieConfig>
+    </application>
+    <application name="CheckSession" azTimeoutMillis="30000" >
+      <urls>
+        <url regex="false" authChain="anon" overrideHost="true" overrideReferer="true">
+          <host>#[OU_HOST]</host>
+          <filterChain>
+            <filter class="com.tremolosecurity.proxy.filters.CheckSession">
+              <!-- The name of the application who's session cookie data to check -->
+              <param name="applicationName" value="ScaleJS"/>
+            </filter>
+          </filterChain>
+          <uri>/scale/sessioncheck</uri>
+          <results>
+            <azSuccess>
+            </azSuccess>
+          </results>
+          <azRules>
+            <rule scope="dn" constraint="o=Tremolo" />
+          </azRules>
+        </url>
+      </urls>
+      <cookieConfig>
+        <sessionCookieName>checksession</sessionCookieName>
+        <domain>#[OU_HOST]</domain>
+        <logoutURI>/logout</logoutURI>
+        <keyAlias>session-unison</keyAlias>
+        <secure>true</secure>
+        <timeout>900</timeout>
+        <scope>-1</scope>
+      </cookieConfig>
+    </application>
+  </applications>
+  <myvdConfig>WEB-INF/myvd.conf</myvdConfig>
+  <authMechs>
+    <mechanism name="loginForm">
+      <uri>/auth/formLogin</uri>
+      <className>com.tremolosecurity.proxy.auth.FormLoginAuthMech</className>
+      <init>
+      </init>
+      <params>
+        <param>FORMLOGIN_JSP</param>
+      </params>
+    </mechanism>
+    <mechanism name="anonymous">
+      <uri>/auth/anon</uri>
+      <className>com.tremolosecurity.proxy.auth.AnonAuth</className>
+      <init>
+        <!-- The RDN of unauthenticated users -->
+        <param name="userName" value="uid=Anonymous"/>
+        <!-- Any number of attributes can be added to the anonymous user -->
+        <param name="role" value="Users" />
+      </init>
+      <params>
+      </params>
+    </mechanism>
+    <mechanism name="passwordReset">
+      <uri>/auth/passwdReset</uri>
+      <className>com.tremolosecurity.proxy.auth.PasswordReset</className>
+      <init>
+        <!-- Database driver -->
+        <param name="driver" value="#[OU_JDBC_DRIVER]"/>
+        <!-- JDBC URL -->
+        <param name="url" value="#[OU_JDBC_PWD_URL]"/>
+        <!-- DB User -->
+        <param name="user" value="#[OU_JDBC_USER]"/>
+        <!-- DB Password -->
+        <param name="password" value="#[OU_JDBC_PASSWORD]"/>
+        <!-- Maximum number of connections -->
+        <param name="maxCons" value="10"/>
+        <!-- Maximum number of connections not actively working -->
+        <param name="maxIdleCons" value="10"/>
+        <!-- The URI to redirect users to after being authenticated if the user's session is over -->
+        <param name="passwordResetURI" value="/scale-reset/index.html"/>
+        <!-- The number of minutes a key is valid -->
+        <param name="minValidKey" value="20"/>
+        <!-- SMTP Host -->
+        <param name="smtpHost" value="#[SMTP_HOST]"/>
+        <!-- SMTP port -->
+        <param name="smtpPort" value="#[SMTP_PORT]"/>
+        <!-- SMTP user -->
+        <param name="smtpUser" value="#[SMTP_USER]"/>
+        <!-- SMTP Password -->
+        <param name="smtpPassword" value="#[SMTP_PASSWORD]"/>
+        <!-- Email with key subject line -->
+        <param name="smtpSubject" value="Password Reset"/>
+        <!-- Message for the password reset, ${key} for the user's key -->
+        <param name="smtpMsg" value="Click to reset: https://#[OU_HOST]/auth/passwdReset?key=${key}"/>
+        <!-- The email address for the "From" -->
+        <param name="smtpFrom" value="#[SMTP_FROM]"/>
+        <!-- Set to true if using TLS -->
+        <param name="smtpTLS" value="#[SMTP_TLS]"/>
+        <!-- Set to true to enable this mechanism -->
+        <param name="enabled" value="true"/>
+        <!-- The HibernateSQL dialect -->
+        <param name="dialect" value="#[OU_HIBERNATE_DIALECT]"/>
+        <!-- Validation query to make sure the connection is still available -->
+        <param name="validationQuery" value="#[OU_JDBC_VALIDATION]"/>
+      </init>
+      <params>
+      </params>
+    </mechanism>
+  </authMechs>
+  <authChains>
+    <!-- An anonymous authentication chain MUST be level 0 -->
+    <chain name="anon" level="0">
+      <authMech>
+        <name>anonymous</name>
+        <required>required</required>
+        <params>
+        </params>
+      </authMech>
+    </chain>
+    <chain name="loginForm" level="20">
+      <authMech>
+        <name>loginForm</name>
+        <required>required</required>
+        <params>
+          <!-- Path to the login form -->
+          <param name="FORMLOGIN_JSP" value="/auth/forms/login.jsp"/>
+          <!-- Either an attribute name OR an ldap filter mapping the form parameters. If this is an ldap filter, form parameters are identified by ${parameter} -->
+          <param name="uidAttr" value="uid"/>
+          <!-- If true, the user is determined based on an LDAP filter rather than a simple user lookup -->
+          <param name="uidIsFilter" value="false"/>
+        </params>
+      </authMech>
+    </chain>
+    <chain name="resetPassword" level="5">
+      <authMech>
+        <name>passwordReset</name>
+        <required>required</required>
+        <params>
+          <!-- The page to collect the user's email address -->
+          <param name="emailCollectionRedir" value="/auth/forms/pwdResetEmail.jsp"/>
+          <!-- The splash screen telling the user a reset message has been sent -->
+          <param name="splashRedirect" value="/auth/forms/pwdResetSplash.jsp"/>
+          <!-- Page to show the user when an email address can't be found -->
+          <param name="noUserSplash" value="/auth/forms/pwdResetNoUser.jsp"/>
+        </params>
+      </authMech>
+    </chain>
+  </authChains>
+  <resultGroups>
+    <!-- The name attribute is how the resultGroup is referenced in the URL -->
+    <resultGroup name="Logout">
+      <!-- Each result should be listed -->
+      <result>
+        <!-- The type of result, one of cookie, header or redirect -->
+        <type>redirect</type>
+        <!-- The source of the result value, one of user, static, custom -->
+        <source>static</source>
+        <!-- Name of the resuler (in this case a cookie) and the value -->
+        <value>/auth/forms/logout.jsp</value>
+      </result>
+    </resultGroup>
+    <resultGroup name="noauaz">
+      <result>
+        <type>redirect</type>
+        <source>static</source>
+        <value>/auth/forms/defaultFailedLogin.jsp</value>
+      </result>
+    </resultGroup>
+    <resultGroup name="scaleRedirect">
+      <result>
+        <type>redirect</type>
+        <source>static</source>
+        <value>/scale/index.html</value>
+      </result>
+    </resultGroup>
+  </resultGroups>
+  <keyStorePath>/etc/openunison/unisonKeyStore.jks</keyStorePath>
+  <keyStorePassword>#[unisonKeystorePassword]</keyStorePassword>
+  <provisioning>
+    <targets>
+      <target name="freeipa" className="com.tremolosecurity.unison.freeipa.FreeIPATarget">
+        <params>
+          <!-- The protocol and host of the FreeIPA IPA-Web server. Do NOT include any path information -->
+          <param name="url" value="https://#[FREEIPA_HOST]"/>
+          <!-- The user name (uid attribute) of a member of the admins group -->
+          <param name="userName" value="#[FREEIPA_ADMIN_USER]"/>
+          <!-- The password of the service account used to create accounts -->
+          <param name="password" value="#[FREEIPA_ADMIN_PASSWORD]"/>
+          <!-- If true, when a user is created a random password is generated so that the account is active and ready for use, but not usable with a password -->
+          <param name="createShadowAccounts" value="false"/>
+        </params>
+        <targetAttribute name="uid" source="uid" sourceType="user"/>
+        <targetAttribute name="givenname" source="givenname" sourceType="user"/>
+        <targetAttribute name="sn" source="sn" sourceType="user"/>
+        <targetAttribute name="mail" source="mail" sourceType="user"/>
+        <targetAttribute name="displayname" source="displayname" sourceType="user"/>
+        <targetAttribute name="gecos" source="gecos" sourceType="user"/>
+        <targetAttribute name="loginshell" source="loginshell" sourceType="user"/>
+        <targetAttribute name="ipasshpubkey" source="ipasshpubkey" sourceType="user"/>
+      </target>
+    </targets>
+    <workflows>
+      <workflow  name="ipa-user-update" label="FreeIPA User Self Update" description="User self update from ScaleJS" inList="false" orgid="687da09f-8ec1-48ac-b035-f2f182b9bd1e">
+        <tasks>
+          <mapping  strict="true">
+            <map>
+              <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="uid"/>
+              <mapping targetAttributeName="givenname" sourceType="user" targetAttributeSource="givenName"/>
+              <mapping targetAttributeName="sn" sourceType="user" targetAttributeSource="sn"/>
+              <mapping targetAttributeName="displayname" sourceType="user" targetAttributeSource="displayName"/>
+              <mapping targetAttributeName="gecos" sourceType="user" targetAttributeSource="displayName"/>
+              <mapping targetAttributeName="ipasshpubkey" sourceType="user" targetAttributeSource="ipaSshPubKey"/>
+              <mapping targetAttributeName="loginshell" sourceType="user" targetAttributeSource="loginShell"/>
+              <mapping targetAttributeName="mail" sourceType="user" targetAttributeSource="mail"/>
+            </map>
+            <onSuccess>
+              <customTask className="com.tremolosecurity.provisioning.customTasks.LoadGroups">
+                <param name="nameAttr" value="uid"/>
+                <param name="inverse" value="false"/>
+              </customTask>
+              <provision sync="true" target="freeipa" setPassword="false" onlyPassedInAttributes="false" />
+              <notifyUser subject="Your profile has been updated" mailAttrib="mail">
+                <msg>
+    Your profile has been updated.  If you didn't update your profile, please contact support immediately.
+  </msg>
+              </notifyUser>
+            </onSuccess>
+          </mapping>
+        </tasks>
+      </workflow>
+      <workflow  name="ipa-password-self-reset" label="FreeIPA User Self Service Password Update" description="Password self service update from ScaleJS" inList="false" orgid="687da09f-8ec1-48ac-b035-f2f182b9bd1e">
+        <tasks>
+          <mapping  strict="true">
+            <map>
+              <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="uid"/>
+            </map>
+            <onSuccess>
+              <customTask className="com.tremolosecurity.provisioning.customTasks.LoadGroups">
+                <param name="nameAttr" value="uid"/>
+                <param name="inverse" value="false"/>
+              </customTask>
+              <customTask className="com.tremolosecurity.provisioning.customTasks.LoadAttributes">
+                <param name="name" value="mail"/>
+                <param name="nameAttr" value="uid"/>
+              </customTask>
+              <provision sync="true" target="freeipa" setPassword="true" onlyPassedInAttributes="true" >
+                <attributes>
+                  <value>uid</value>
+                </attributes>
+              </provision>
+              <notifyUser subject="Your password has been updated" mailAttrib="mail">
+                <msg>
+                        Your profile has been updated.  If you didn't update your password, please contact support immediately.
+                      </msg>
+                </notifyUser>
+              </onSuccess>
+            </mapping>
+          </tasks>
+        </workflow>
+        <workflow  name="ipa-user-selfregistration" label="FreeIPA User Self Registration" description="User self registration from ScaleJS" inList="false" orgid="687da09f-8ec1-48ac-b035-f2f182b9bd1e">
+          <tasks>
+            <approval label="Approve Access to LDAP">
+              <emailTemplate>You have open approvals</emailTemplate>
+              <approvers>
+                <rule scope="group" constraint="cn=#[OU_SELF_REG_APPROVER_GROUP],cn=groups,ou=freeipa,o=Tremolo" />
+              </approvers>
+              <onSuccess>
+                <mapping  strict="true">
+                  <map>
+                    <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="uid"/>
+                    <mapping targetAttributeName="givenname" sourceType="user" targetAttributeSource="givenName"/>
+                    <mapping targetAttributeName="sn" sourceType="user" targetAttributeSource="sn"/>
+                    <mapping targetAttributeName="displayname" sourceType="user" targetAttributeSource="displayName"/>
+                    <mapping targetAttributeName="gecos" sourceType="user" targetAttributeSource="displayName"/>
+                    <mapping targetAttributeName="mail" sourceType="user" targetAttributeSource="mail"/>
+                  </map>
+                  <onSuccess>
+                    <provision sync="true" target="freeipa" setPassword="false" onlyPassedInAttributes="true" />
+                    <notifyUser subject="Your profile has been created" mailAttrib="mail">
+                      <msg>
+                                    Your account has been created, you will receive an email to set your password.
+                                  </msg>
+                      </notifyUser>
+                      <customTask className="com.tremolosecurity.provisioning.customTasks.SetPassword">
+                        <param name="mechName" value="passwordReset"/>
+                      </customTask>
+                    </onSuccess>
+                  </mapping>
+                </onSuccess>
+              </approval>
+            </tasks>
+          </workflow>
+          <workflow  name="ipa-group-access" label="Access to $groupName$" description="$descriptionAttribute$" inList="true" orgid="687da09f-8ec1-48ac-b035-f2f182b9bd1e">
+            <dynamicConfiguration dynamic="true" className="com.tremolosecurity.provisioning.dynamicwf.LDAPDynaicWorkflows" >
+              <!-- Where to start searching for groups -->
+              <param name="searchBase" value="cn=groups,ou=freeipa,o=Tremolo" />
+              <!-- Filter to use when searching for groups -->
+              <param name="searchFilter" value="(&amp;(objectClass=groupOfNames)(owner=*))" />
+              <!-- Name of the attribute that stores the group's name, required; Exposed as groupName in the workflow -->
+              <param name="groupNameAttribute" value="cn" />
+              <!-- Name of the attribute that stores the approver for access to this group; Exposed as approver in the workflow -->
+              <param name="approverAttribute" value="owner" />
+              <!-- Name of the attribute that stores a description, optional; Exposed as descriptionAttribute in the workflow -->
+              <param name="descriptionAttribute" value="description" />
+            </dynamicConfiguration>
+            <tasks>
+              <customTask className="com.tremolosecurity.provisioning.customTasks.LoadGroups">
+                <param name="nameAttr" value="uid"/>
+                <param name="inverse" value="false"/>
+              </customTask>
+              <customTask className="com.tremolosecurity.provisioning.customTasks.LoadAttributes">
+                <param name="name" value="mail"/>
+                <param name="nameAttr" value="uid"/>
+              </customTask>
+              <approval label="Approve Access to LDAP">
+                <emailTemplate>You have open approvals</emailTemplate>
+                <approvers>
+                  <rule scope="group" constraint="$approver$" />
+                </approvers>
+                <onSuccess>
+                  <mapping  strict="true">
+                    <map>
+                      <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="uid"/>
+                      <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="mail"/>
+                    </map>
+                    <onSuccess>
+                      <addGroup name="$groupName$" remove="false"/>
+                      <provision sync="true" target="freeipa" setPassword="false" onlyPassedInAttributes="true" />
+                      <notifyUser subject="Your access to $groupName$ has been granted" mailAttrib="mail">
+                        <msg>
+                                      Your access to $groupName$ has been granted
+                                    </msg>
+                        </notifyUser>
+                        <customTask className="com.tremolosecurity.provisioning.customTasks.SetPassword">
+                          <param name="mechName" value="passwordReset"/>
+                        </customTask>
+                      </onSuccess>
+                    </mapping>
+                  </onSuccess>
+                  <onFailure>
+                    <mapping  strict="true">
+                      <map>
+                        <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="uid"/>
+                        <mapping targetAttributeName="uid" sourceType="user" targetAttributeSource="mail"/>
+                      </map>
+                      <onSuccess>
+                        <addGroup name="$groupName$" remove="true"/>
+                        <provision sync="true" target="freeipa" setPassword="false" onlyPassedInAttributes="true" />
+                        <notifyUser subject="Your access to $groupName$ has been removed" mailAttrib="mail">
+                          <msg>
+                                        Your access to $groupName$ has been removed
+                                      </msg>
+                          </notifyUser>
+                          <customTask className="com.tremolosecurity.provisioning.customTasks.SetPassword">
+                            <param name="mechName" value="passwordReset"/>
+                          </customTask>
+                        </onSuccess>
+                      </mapping>
+                    </onFailure>
+                </approval>
+              </tasks>
+            </workflow>
+        </workflows>
+        <approvalDB>
+          <hibernateDialect>#[OU_HIBERNATE_DIALECT]</hibernateDialect>
+          <driver>#[OU_JDBC_DRIVER]</driver>
+          <url>#[OU_JDBC_URL]</url>
+          <user>#[OU_JDBC_USER]</user>
+          <password>#[OU_JDBC_PASSWORD]</password>
+          <maxConns>10</maxConns>
+          <maxIdleConns>10</maxIdleConns>
+          <!-- <hibernateProperty name="hibernate.default_schema" value="public" /> -->
+          <userIdAttribute>uid</userIdAttribute>
+          <approverAttributes>
+            <value>givenName</value>
+            <value>sn</value>
+            <value>mail</value>
+            <value>uid</value>
+          </approverAttributes>
+          <userAttributes>
+            <value>givenName</value>
+            <value>sn</value>
+            <value>mail</value>
+            <value>uid</value>
+          </userAttributes>
+          <enabled>true</enabled>
+          <smtpHost>#[SMTP_HOST]</smtpHost>
+          <smtpPort>#[SMTP_PORT]</smtpPort>
+          <smtpUser>#[SMTP_USER]</smtpUser>
+          <smtpPassword>#[SMTP_PASSWORD]</smtpPassword>
+          <smtpSubject>Awaiting Approvals</smtpSubject>
+          <smtpFrom>#[SMTP_FROM]</smtpFrom>
+          <smtpTLS>#[SMTP_TLS]</smtpTLS>
+          <encryptionKey>session-unison</encryptionKey>
+          <smtpUseSOCKSProxy>false</smtpUseSOCKSProxy>
+          <smtpSOCKSProxyHost>
+          </smtpSOCKSProxyHost>
+          <smtpSOCKSProxyPort>0</smtpSOCKSProxyPort>
+          <smtpLocalhost>localhost</smtpLocalhost>
+          <validationQuery>#[OU_JDBC_VALIDATION]</validationQuery>
+        </approvalDB>
+        <org name="MyOrg" description="MyOrg Enterprise Applications" uuid="687da09f-8ec1-48ac-b035-f2f182b9bd1e">
+          <orgs name="Audit Reports" description="Reports for auditors" uuid="fc8799cf-b947-4626-94bd-1ddda226bc16">
+            <azRules>
+              <rule scope="group" constraint="cn=#[OU_AUDITOR_GROUP],cn=groups,ou=freeipa,o=Tremolo"/>
+            </azRules>
+          </orgs>
+        </org>
+        <queueConfig isUseInternalQueue="true" maxProducers="5"  maxConsumers="5" taskQueueName="TremoloUnisonTaskQueue" smtpQueueName="TremoloUnisonSMTPQueue" encryptionKeyName="session-unison">
+        </queueConfig>
+        <portal>
+        </portal>
+        <scheduler useDB="false" threadCount="3" instanceLabel="testing" instanceIPMask="127">
+          <job className="com.tremolosecurity.provisioning.scheduler.jobs.UpdateApprovalAz" name="resetAllowedApprovers" group="testing">
+            <!-- When to run the job -->
+            <cronSchedule
+                    seconds="0"
+                    minutes="*"
+                    hours="*"
+                    dayOfMonth="*"
+                    month="*"
+                    dayOfWeek="?"
+                    year="*"
+                    />
+            <!-- The name of the queue the Update Approvals Authorizations message listener is configured on      -->
+            <param name="queueName" value="rebaseQueue" />
+          </job>
+          <job className="com.tremolosecurity.provisioning.scheduler.jobs.RemindApprovers" name="remindAppovers" group="testing">
+            <!-- When to run the job -->
+                  <cronSchedule
+                          seconds="0"
+                          minutes="0"
+                          hours="9"
+                          dayOfMonth="*"
+                          month="*"
+                          dayOfWeek="?"
+                          year="*"
+                  />
+
+            <!-- The template for the message to send to the approvers. Use %L to represent the label of the workflow that is open and %D to represent the number of days open    -->
+            <param name="message" value="The request %L has been open for %D days, please login to act on this request" />
+            <!-- The number of days an approval request should be open before sending a reminder  -->
+            <param name="days" value="7" />
+            <!-- The name of the attribute that has the user's email address      -->
+            <param name="mailAttributeName" value="mail" />
+          </job>
+        </scheduler>
+        <listeners>
+          <!-- queueName - The name of the queue to listen to -->
+          <listener className="com.tremolosecurity.provisioning.listeners.UpdateApprovalAZListener" queueName="rebaseQueue"></listener>
+        </listeners>
+        <reports>
+          <report orgID="687da09f-8ec1-48ac-b035-f2f182b9bd1e" name="My Open Requests" description="List of your currently open requests and the approvers responsible for acting on them" groupBy="id" groupings="true">
+            <paramater>currentUser</paramater>
+            <sql>select  approvals.id,approvals.label AS Approval ,approvals.createTS AS `Approval Opened`,workflows.name AS `Workflow Name`,workflows.label AS `Workflow Label`,workflows.requestReason AS `Request Reason`, concat((SELECT value FROM userAttributes WHERE userAttributes.name='givenName' AND userid=users.id),' ',(SELECT value FROM userAttributes WHERE userAttributes.name='sn' AND userid=users.id)) as `Subject Name`, (SELECT value FROM userAttributes WHERE name='mail' AND userid=users.id) as `Subject Email`, (SELECT value FROM approverAttributes WHERE name='givenName' AND approverid=approvers.id) as `First Name`,(SELECT value FROM approverAttributes WHERE name='sn' AND approverid=approvers.id) as `Last Name`,(SELECT value FROM approverAttributes WHERE name='mail' AND approverid=approvers.id) as `Email`  from approvals inner join workflows on approvals.workflow=workflows.id inner join users on workflows.userid=users.id inner join allowedApprovers on approvals.id=allowedApprovers.approval inner join approvers on approvers.id=allowedApprovers.approver where users.userKey=? AND approvedTS is null order by approvals.createTS ASC, approvals.id ASC</sql>
+            <headerFields>Approval</headerFields>
+            <headerFields>Subject Name</headerFields>
+            <headerFields>Subject Email</headerFields>
+            <headerFields>Workflow Name</headerFields>
+            <headerFields>Workflow Label</headerFields>
+            <headerFields>Request Reason</headerFields>
+            <dataFields>First Name</dataFields>
+            <dataFields>Last Name</dataFields>
+            <dataFields>Email</dataFields>
+          </report>
+          <report orgID="687da09f-8ec1-48ac-b035-f2f182b9bd1e" name="Approvals Completed by Me" description="All approvals you approved or denied" groupBy="wid" groupings="false">
+            <paramater>currentUser</paramater>
+            <sql>select  workflows.id AS wid, approvals.id AS aid,approvals.label AS Approval ,approvals.createTS AS `Approval Opened`,workflows.name AS `Workflow Name`,workflows.label AS `Workflow Label`,workflows.requestReason AS `Request Reason`, concat((SELECT value FROM userAttributes WHERE name='givenName' AND userid=users.id),' ',(SELECT value FROM userAttributes WHERE name='sn' AND userid=users.id)) as `Subject Name`, (SELECT value FROM userAttributes WHERE name='mail' AND userid=users.id) as `Subject Email`, (SELECT value FROM approverAttributes WHERE name='givenName' AND approverid=approvers.id) as `First Name`,(SELECT value FROM approverAttributes WHERE name='sn' AND approverid=approvers.id) as `Last Name`,(SELECT value FROM approverAttributes WHERE name='mail' AND approverid=approvers.id) as `Email`,IF(approvals.approved = 1, 'Approved', 'Rejected') AS `Approval Result`,approvals.approvedTS AS `Approved Date`,approvals.reason AS Reason from approvals inner join approvers on approvals.approver=approvers.id inner join workflows on workflows.id=approvals.workflow inner join users on users.id=workflows.userid WHERE approvers.userKey=? order by approvals.approvedTS DESC; </sql>
+            <dataFields>Workflow Name</dataFields>
+            <dataFields>Workflow Label</dataFields>
+            <dataFields>Subject Name</dataFields>
+            <dataFields>Subject Email</dataFields>
+            <dataFields>Request Reason</dataFields>
+            <dataFields>Approval</dataFields>
+            <dataFields>Approval Result</dataFields>
+            <dataFields>Approved Date</dataFields>
+          </report>
+          <report orgID="fc8799cf-b947-4626-94bd-1ddda226bc16" name="Open Approvals" description="Lists all of the approvals that are currently waiting action" groupBy="id" groupings="true">
+            <sql>select&#xD;
+            &#xD;
+            approvals.id,approvals.label AS Approval ,approvals.createTS AS `Approval Opened`,workflows.name AS `Workflow Name`,workflows.label AS `Workflow Label`,workflows.requestReason AS `Request Reason`,&#xD;
+            concat((SELECT value FROM userAttributes WHERE name='givenName' AND userid=users.id),' ',(SELECT value FROM userAttributes WHERE name='sn' AND userid=users.id)) as `Subject Name`, (SELECT value FROM userAttributes WHERE name='mail' AND userid=users.id) as `Subject Email`,&#xD;
+            (SELECT value FROM approverAttributes WHERE name='givenName' AND approverid=approvers.id) as `First Name`,(SELECT value FROM approverAttributes WHERE name='sn' AND approverid=approvers.id) as `Last Name`,(SELECT value FROM approverAttributes WHERE name='mail' AND approverid=approvers.id) as `Email`&#xD;
+            &#xD;
+            from approvals inner join workflows on approvals.workflow=workflows.id inner join users on workflows.userid=users.id inner join allowedApprovers on approvals.id=allowedApprovers.approval inner join approvers on approvers.id=allowedApprovers.approver where approvedTS is null&#xD;
+            order by approvals.createTS ASC, approvals.id ASC</sql>
+            <headerFields>Approval</headerFields>
+            <headerFields>Subject Name</headerFields>
+            <headerFields>Subject Email</headerFields>
+            <headerFields>Workflow Name</headerFields>
+            <headerFields>Workflow Label</headerFields>
+            <headerFields>Request Reason</headerFields>
+            <dataFields>First Name</dataFields>
+            <dataFields>Last Name</dataFields>
+            <dataFields>Email</dataFields>
+          </report>
+          <report orgID="fc8799cf-b947-4626-94bd-1ddda226bc16" name="Completed Approvals" description="All approvals completed in a given set of dates" groupBy="wid" groupings="true">
+            <paramater>beginDate</paramater>
+            <paramater>endDate</paramater>
+            <sql>select &#xD;
+            workflows.id AS wid, approvals.id AS aid,approvals.label AS Approval ,approvals.createTS AS `Approval Opened`,workflows.name AS `Workflow Name`,workflows.label AS `Workflow Label`,workflows.requestReason AS `Request Reason`,&#xD;
+            concat((SELECT value FROM userAttributes WHERE name='givenName' AND userid=users.id),' ',(SELECT value FROM userAttributes WHERE name='sn' AND userid=users.id)) as `Subject Name`, (SELECT value FROM userAttributes WHERE name='mail' AND userid=users.id) as `Subject Email`,&#xD;
+            (SELECT value FROM approverAttributes WHERE name='givenName' AND approverid=approvers.id) as `First Name`,(SELECT value FROM approverAttributes WHERE name='sn' AND approverid=approvers.id) as `Last Name`,(SELECT value FROM approverAttributes WHERE name='mail' AND approverid=approvers.id) as `Email`,IF(approvals.approved = 1, 'Approved', 'Rejected') AS `Approval Result`,approvals.approvedTS AS `Approved Date`,approvals.reason AS Reason&#xD;
+            from approvals inner join approvers on approvals.approver=approvers.id inner join workflows on workflows.id=approvals.workflow inner join users on users.id=workflows.userid WHERE approvals.approvedTS &gt;= ? AND approvals.approvedTS &lt;= ? order by approvals.id ASC,workflows.id ASC;&#xD;
+          </sql>
+          <headerFields>Workflow Name</headerFields>
+          <headerFields>Workflow Label</headerFields>
+          <headerFields>Subject Name</headerFields>
+          <headerFields>Subject Email</headerFields>
+          <headerFields>Request Reason</headerFields>
+          <dataFields>Approval</dataFields>
+          <dataFields>First Name</dataFields>
+          <dataFields>Last Name</dataFields>
+          <dataFields>Email</dataFields>
+          <dataFields>Approval Result</dataFields>
+        </report>
+        <report orgID="fc8799cf-b947-4626-94bd-1ddda226bc16" name="Single User Change Log" description="All changes to the chosen user" groupBy="id" groupings="true">
+          <paramater>userKey</paramater>
+          <sql>select&#xD;
+          (SELECT value FROM userAttributes WHERE userAttributes.name='givenName' AND userid=users.id) AS `First Name`, (SELECT value FROM userAttributes WHERE userAttributes.name='sn' AND userid=users.id) AS `Last Name`, (SELECT value FROM userAttributes WHERE userAttributes.name='mail' AND userid=users.id) AS `Email Address` ,workflows.id,&#xD;
+          workflows.name as `Workflow Name`,workflows.label AS `Workflow Label`,workflows.startTS AS `Workflow Started`,workflows.completeTS AS `Workflow Completed`,workflows.requestReason AS `Request Reason`,&#xD;
+          auditLogType.name  AS `Action`,CASE WHEN isEntry = 1 THEN 'Object' ELSE 'Attribute' END AS `Target Type`,auditLogs.attribute AS `Name`,auditLogs.val AS `Value`&#xD;
+          &#xD;
+          &#xD;
+           from users inner join auditLogs on users.id=auditLogs.userid inner join auditLogType on auditLogType.id=auditLogs.actionType inner join workflows on workflows.id=auditLogs.workflow where users.userKey=?&#xD;
+           order by workflows.completeTS ASC ,workflows.id ASC , auditLogs.isEntry DESC</sql>
+          <headerFields>Workflow Name</headerFields>
+          <headerFields>Workflow Label</headerFields>
+          <headerFields>Request Reason</headerFields>
+          <headerFields>Workflow Started</headerFields>
+          <headerFields>Workflow Completed</headerFields>
+          <headerFields>First Name</headerFields>
+          <headerFields>Last Name</headerFields>
+          <headerFields>Email Address</headerFields>
+          <dataFields>Action</dataFields>
+          <dataFields>Target Type</dataFields>
+          <dataFields>Name</dataFields>
+          <dataFields>Value</dataFields>
+        </report>
+        <report orgID="fc8799cf-b947-4626-94bd-1ddda226bc16" name="Change Log for Period" description="Changes to all users between the two selected dates" groupBy="id" groupings="true">
+          <paramater>beginDate</paramater>
+          <paramater>endDate</paramater>
+          <sql>select&#xD;
+          (SELECT value FROM userAttributes WHERE name='givenName' AND userid=users.id) AS `First Name`, (SELECT value FROM userAttributes WHERE name='sn' AND userid=users.id) AS `Last Name`, (SELECT value FROM userAttributes WHERE name='mail' AND userid=users.id) AS `Email Address` ,workflows.id,&#xD;
+          workflows.name as `Workflow Name`,workflows.label AS `Workflow Label`,workflows.startTS AS `Workflow Started`,workflows.completeTS AS `Workflow Completed`,workflows.requestReason AS `Request Reason`,&#xD;
+          auditLogType.name  AS `Action`,CASE WHEN isEntry = 1 THEN 'Object' ELSE 'Attribute' END AS `Target Type`,auditLogs.attribute AS `Name`,auditLogs.val AS `Value`&#xD;
+          &#xD;
+          &#xD;
+           from users inner join auditLogs on users.id=auditLogs.userid inner join auditLogType on auditLogType.id=auditLogs.actionType inner join workflows on workflows.id=auditLogs.workflow where workflows.completeTS &gt;= ? and workflows.completeTS &lt;= ?&#xD;
+           order by workflows.completeTS ASC ,workflows.id ASC , auditLogs.isEntry DESC</sql>
+          <headerFields>Workflow Name</headerFields>
+          <headerFields>Workflow Label</headerFields>
+          <headerFields>Request Reason</headerFields>
+          <headerFields>Workflow Started</headerFields>
+          <headerFields>Workflow Completed</headerFields>
+          <headerFields>First Name</headerFields>
+          <headerFields>Last Name</headerFields>
+          <headerFields>Email Address</headerFields>
+          <dataFields>Action</dataFields>
+          <dataFields>Target Type</dataFields>
+          <dataFields>Name</dataFields>
+          <dataFields>Value</dataFields>
+        </report>
+      </reports>
+    </provisioning>
+    </tremoloConfig>
